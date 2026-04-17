@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Course Map — blueprint topography palette
+   ============================================================ */
+:root {
+  --cm-bg:        #F2EEE4;  /* cream */
+  --cm-ink:       #0E120F;  /* near-black */
+  --cm-forest:    #1E3A2B;  /* primary */
+  --cm-blueprint: #4A6B7A;  /* line work, secondary type */
+  --cm-topo:      #FF6B1A;  /* accent, wayfinding */
+  --cm-chalk:     #FFFDF7;  /* card surface */
+  --cm-rough:     #C9C2B2;  /* dividers, disabled */
+  --cm-moss:      #3B4A2A;
+
+  /* Semantic */
+  --background: var(--cm-bg);
+  --foreground: var(--cm-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-bg: var(--cm-bg);
+  --color-ink: var(--cm-ink);
+  --color-forest: var(--cm-forest);
+  --color-blueprint: var(--cm-blueprint);
+  --color-topo: var(--cm-topo);
+  --color-chalk: var(--cm-chalk);
+  --color-rough: var(--cm-rough);
+  --color-moss: var(--cm-moss);
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+@layer base {
+  html, body {
+    background: var(--cm-bg);
+    color: var(--cm-ink);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  ::selection {
+    background: var(--cm-topo);
+    color: var(--cm-chalk);
+  }
+}
+
+/* ============================================================
+   Contour grid — subtle blueprint texture behind everything
+   ============================================================ */
+.cm-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--cm-blueprint) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--cm-blueprint) 14%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.cm-grid-fine {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--cm-blueprint) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--cm-blueprint) 8%, transparent) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+/* Concentric contour ring texture, for hero/section backgrounds */
+.cm-contours {
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0,
+    transparent 10%,
+    color-mix(in oklab, var(--cm-blueprint) 16%, transparent) 10%,
+    color-mix(in oklab, var(--cm-blueprint) 16%, transparent) calc(10% + 1px),
+    transparent calc(10% + 1px),
+    transparent 20%,
+    color-mix(in oklab, var(--cm-blueprint) 14%, transparent) 20%,
+    color-mix(in oklab, var(--cm-blueprint) 14%, transparent) calc(20% + 1px),
+    transparent calc(20% + 1px),
+    transparent 30%,
+    color-mix(in oklab, var(--cm-blueprint) 12%, transparent) 30%,
+    color-mix(in oklab, var(--cm-blueprint) 12%, transparent) calc(30% + 1px),
+    transparent calc(30% + 1px),
+    transparent 40%,
+    color-mix(in oklab, var(--cm-blueprint) 10%, transparent) 40%,
+    color-mix(in oklab, var(--cm-blueprint) 10%, transparent) calc(40% + 1px),
+    transparent calc(40% + 1px),
+    transparent 50%,
+    color-mix(in oklab, var(--cm-blueprint) 8%, transparent) 50%,
+    color-mix(in oklab, var(--cm-blueprint) 8%, transparent) calc(50% + 1px),
+    transparent calc(50% + 1px),
+    transparent 60%,
+    color-mix(in oklab, var(--cm-blueprint) 6%, transparent) 60%,
+    color-mix(in oklab, var(--cm-blueprint) 6%, transparent) calc(60% + 1px),
+    transparent calc(60% + 1px)
+  );
+}
+
+/* Rotating marquee utility for the ticker/aside rails */
+@keyframes cm-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.cm-marquee {
+  animation: cm-marquee 40s linear infinite;
+}
+
+/* Slow breathing for the hero scene fallback */
+@keyframes cm-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.03); opacity: 1; }
+}
+.cm-breathe { animation: cm-breathe 8s ease-in-out infinite; }
+
+/* Gentle blink for the live indicator */
+@keyframes cm-blink {
+  0%, 60% { opacity: 1; }
+  80%, 100% { opacity: 0.35; }
+}
+.cm-blink { animation: cm-blink 1.6s ease-in-out infinite; }
+
+/* Tabular numbers everywhere there's a score */
+.cm-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "zero";
+}
