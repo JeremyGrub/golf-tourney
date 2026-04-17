@@ -5,7 +5,18 @@
 export type TournamentStatus = "draft" | "live" | "complete";
 export type ScoringFormat = "stroke_play";
 
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
 export interface Database {
+  __InternalSupabase: {
+    PostgrestVersion: "12";
+  };
   public: {
     Tables: {
       users: {
@@ -145,6 +156,7 @@ export interface Database {
           tee_time_id: string | null;
           created_at: string;
         };
+        Relationships: [];
       };
     };
     Functions: {
@@ -155,6 +167,10 @@ export interface Database {
           p_strokes: number;
         };
         Returns: Database["public"]["Tables"]["scores"]["Row"];
+      };
+      get_player_card: {
+        Args: { p_token: string };
+        Returns: Json;
       };
     };
     Enums: {

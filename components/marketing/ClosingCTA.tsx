@@ -1,10 +1,17 @@
 import Link from "next/link";
+import CupFinale from "./CupFinale";
 
 export default function ClosingCTA() {
   return (
     <section id="start" className="relative overflow-hidden border-t border-ink/10 bg-forest text-chalk">
+      <CupFinale />
       <div className="pointer-events-none absolute inset-0 opacity-[0.18]">
-        <svg viewBox="0 0 1200 600" className="h-full w-full" aria-hidden>
+        <svg
+          viewBox="0 0 1200 600"
+          preserveAspectRatio="none"
+          className="h-full w-full"
+          aria-hidden
+        >
           {Array.from({ length: 16 }).map((_, i) => {
             const r = 40 + i * 48;
             return (

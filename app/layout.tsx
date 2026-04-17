@@ -21,11 +21,23 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "Lucky Nova — Live golf scoring for every tournament",
+  title: "thru. — Live golf scoring for every tournament",
   description:
     "Set up a tournament in minutes, hand your players a link, and let the leaderboard update itself. No paper. No apps to install.",
-  metadataBase: new URL("http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    type: "website",
+    siteName: "thru.",
+    title: "thru. — Live golf scoring for every tournament",
+    description:
+      "Keep the card. Lose the paper. A live leaderboard your players can post to from their phones.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
