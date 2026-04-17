@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { loadOwnedTournament } from "@/lib/host";
 import CopyField from "@/components/host/CopyField";
+import EmptyState from "@/components/ui/EmptyState";
 import { addParticipant, deleteParticipant } from "../actions";
 
 export default async function PlayersPage({
@@ -91,11 +92,13 @@ export default async function PlayersPage({
       </div>
 
       {list.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-ink/15 bg-chalk/40 p-10 text-center">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-blueprint">
-            no players yet · add your first above
-          </p>
-        </div>
+        <EmptyState
+          size="inline"
+          variant="flag"
+          eyebrow="· / empty field"
+          title="Nobody on the tee yet."
+          body="Drop a name into the form above and you'll get a private link back. Each one only works for that player, and they don't need an account."
+        />
       ) : (
         <ul className="divide-y divide-ink/10 overflow-hidden rounded-[24px] border border-ink/10 bg-chalk">
           {list.map((p, idx) => {

@@ -1,4 +1,5 @@
 import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
+import EmptyState from "@/components/ui/EmptyState";
 import { loadLeaderboard } from "@/lib/leaderboard";
 
 export const revalidate = 0;
@@ -60,11 +61,25 @@ export default async function LeaderboardPage({
         </div>
       </header>
 
-      <LeaderboardTable snapshot={snapshot} />
+      {snapshot.participants.length === 0 ? (
+        <EmptyState
+          eyebrow="· / no field yet"
+          title="The tee box is quiet."
+          body={
+            isLive
+              ? "Players show up here the moment the host adds them. Give it a minute, then refresh."
+              : "This tournament hasn't been published yet — no field to show. Check back when it tips off."
+          }
+        />
+      ) : (
+        <>
+          <LeaderboardTable snapshot={snapshot} />
 
-      <p className="mt-8 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-ink/40">
-        thru. · tap a row to expand hole-by-hole
-      </p>
+          <p className="mt-8 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-ink/40">
+            thru. · tap a row to expand hole-by-hole
+          </p>
+        </>
+      )}
     </div>
   );
 }

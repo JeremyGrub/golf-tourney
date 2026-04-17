@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { submitScore } from "@/app/(player)/play/[token]/actions";
 import { classifyStroke } from "@/lib/scoring/compute";
+import { enqueueScore } from "@/lib/offline/queue";
 
 type Props = {
   token: string;
@@ -33,21 +34,49 @@ export default function HoleEntry({
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [queued, setQueued] = useState<boolean>(false);
 
   function commit(next: number) {
     if (next < 1) next = 1;
     if (next > 15) next = 15;
     setStrokes(next);
     setError(null);
+    setQueued(false);
     startTransition(async () => {
       applyOptimistic(next);
-      const result = await submitScore(token, holeNumber, next);
-      if (!result.ok) {
-        setError(
-          result.error.includes("tournament_not_live")
-            ? "This tournament hasn't tipped off yet."
-            : "Couldn't sync. Try again."
-        );
+
+      // Offline at submit time — skip the server action entirely and queue
+      // for the OfflineShell to drain later.
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        await enqueueScore({
+          token,
+          holeNumber,
+          strokes: next,
+          queuedAt: Date.now(),
+        });
+        setQueued(true);
+        return;
+      }
+
+      try {
+        const result = await submitScore(token, holeNumber, next);
+        if (!result.ok) {
+          setError(
+            result.error.includes("tournament_not_live")
+              ? "This tournament hasn't tipped off yet."
+              : "Couldn't sync. Try again."
+          );
+        }
+      } catch {
+        // Transport failure (network dropped mid-flight, Server Action
+        // couldn't reach the server). Queue and show the offline affordance.
+        await enqueueScore({
+          token,
+          holeNumber,
+          strokes: next,
+          queuedAt: Date.now(),
+        });
+        setQueued(true);
       }
     });
   }
@@ -145,10 +174,24 @@ export default function HoleEntry({
           </div>
 
           <div className="mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em]">
-            <span className="text-ink/40">
-              {isPending ? "saving…" : error ? "try again" : "saved"}
+            <span
+              className={
+                queued
+                  ? "text-topo-deep"
+                  : error
+                  ? "text-topo-deep"
+                  : "text-ink/40"
+              }
+            >
+              {isPending
+                ? "saving…"
+                : queued
+                ? "queued · syncs when back online"
+                : error
+                ? "try again"
+                : "saved"}
             </span>
-            {error && <span className="text-topo">{error}</span>}
+            {error && <span className="text-topo-deep">{error}</span>}
           </div>
         </div>
       </div>

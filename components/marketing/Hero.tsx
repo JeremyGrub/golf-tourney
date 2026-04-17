@@ -85,7 +85,7 @@ export default function Hero() {
                 <div className="font-display text-2xl font-semibold tracking-tight">
                   R. Ortiz
                 </div>
-                <div className="font-mono text-3xl font-semibold text-topo cm-tabular">
+                <div className="font-mono text-3xl font-semibold text-topo-deep cm-tabular">
                   −4
                 </div>
               </div>

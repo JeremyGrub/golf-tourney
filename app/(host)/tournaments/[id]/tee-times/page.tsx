@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { loadOwnedTournament } from "@/lib/host";
+import EmptyState from "@/components/ui/EmptyState";
 
 export default async function TeeTimesPage({
   params,
@@ -25,28 +25,17 @@ export default async function TeeTimesPage({
         </p>
       </div>
 
-      <div className="relative overflow-hidden rounded-[24px] border border-dashed border-ink/15 bg-chalk/40 p-10">
-        <div className="absolute inset-0 cm-contours opacity-30 pointer-events-none" aria-hidden />
-        <div className="relative max-w-md">
-          <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-blueprint">
-            · / placeholder
-          </div>
-          <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight">
-            Tee sheet coming soon.
-          </h3>
-          <p className="mt-3 text-ink/70">
-            The tee-sheet builder is in the next slice. Until then, you can still
-            publish and run a tournament — players just tee off whenever their
-            group is ready.
-          </p>
-          <Link
-            href={`/tournaments/${id}`}
-            className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-ink/80 hover:text-ink"
-          >
-            ← back to overview
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        eyebrow="· / next slice"
+        title="Tee sheet is on the way."
+        body="The group-and-time builder ships in the next slice. Until then, you can still publish and run a tournament — players just tee off whenever their group is ready."
+        cta={{
+          href: `/tournaments/${id}`,
+          label: "Back to overview",
+          tone: "outline",
+          arrow: "left",
+        }}
+      />
     </div>
   );
 }

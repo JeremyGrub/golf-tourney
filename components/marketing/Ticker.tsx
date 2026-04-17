@@ -22,7 +22,7 @@ export default function Ticker() {
             <span
               className={
                 item.score.startsWith("-")
-                  ? "text-topo font-semibold"
+                  ? "text-topo-deep font-semibold"
                   : item.score === "E"
                     ? "text-forest"
                     : "text-ink/70"

@@ -145,7 +145,7 @@ export default function LeaderboardPreview() {
                         className={
                           "w-14 text-right font-mono text-xl cm-tabular " +
                           (p.score < 0
-                            ? "text-topo font-semibold"
+                            ? "text-topo-deep font-semibold"
                             : p.score === 0
                               ? "text-forest"
                               : "text-ink/70")

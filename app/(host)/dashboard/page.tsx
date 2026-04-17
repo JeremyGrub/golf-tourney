@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import HostChrome from "@/components/host/HostChrome";
+import EmptyState from "@/components/ui/EmptyState";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -43,7 +44,12 @@ export default async function DashboardPage() {
         </div>
 
         {list.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            eyebrow="· / empty card"
+            title="No tourneys yet. Let's fix that."
+            body="Set up your first event in about four minutes. You can always come back and edit the par, the field, and the tee sheet."
+            cta={{ href: "/tournaments/new", label: "Start your first tournament" }}
+          />
         ) : (
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {list.map((t) => (
@@ -97,28 +103,3 @@ function StatusBadge({ status }: { status: "draft" | "live" | "complete" }) {
   );
 }
 
-function EmptyState() {
-  return (
-    <div className="relative overflow-hidden rounded-[28px] border border-ink/10 bg-chalk p-10 md:p-16">
-      <div className="absolute inset-0 cm-contours opacity-40 pointer-events-none" aria-hidden />
-      <div className="relative max-w-lg">
-        <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-blueprint">
-          · / empty card
-        </div>
-        <h2 className="font-display text-4xl font-semibold leading-[0.95] tracking-tight">
-          No tourneys yet. <span className="italic text-forest" style={{ fontVariationSettings: '"SOFT" 100, "WONK" 1' }}>Let&apos;s fix that.</span>
-        </h2>
-        <p className="mt-4 text-ink/70">
-          Set up your first event in about four minutes. You can always come back
-          and edit the par, the field, and the tee sheet.
-        </p>
-        <Link
-          href="/tournaments/new"
-          className="mt-8 inline-flex items-center gap-3 rounded-full bg-topo px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-chalk hover:-translate-y-0.5 transition-transform"
-        >
-          Start your first tournament <span aria-hidden>→</span>
-        </Link>
-      </div>
-    </div>
-  );
-}

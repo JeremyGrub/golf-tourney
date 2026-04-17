@@ -1,3 +1,5 @@
+import OfflineShell from "@/components/player/OfflineShell";
+
 export default function PlayerLayout({
   children,
 }: {
@@ -7,7 +9,7 @@ export default function PlayerLayout({
     <div className="relative min-h-dvh">
       <div className="absolute inset-0 cm-grid-fine pointer-events-none opacity-60" aria-hidden />
       <div className="relative mx-auto w-full max-w-md px-5 py-6">
-        {children}
+        <OfflineShell>{children}</OfflineShell>
       </div>
     </div>
   );

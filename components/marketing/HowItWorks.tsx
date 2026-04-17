@@ -50,7 +50,7 @@ export default function HowItWorks() {
               }
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-topo">
+                <span className="font-mono text-xs uppercase tracking-[0.2em] text-topo-deep">
                   {s.n}
                 </span>
                 <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-blueprint">

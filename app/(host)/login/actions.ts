@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { getRequestOrigin } from "@/lib/site-url";
 
 export async function signInWithEmail(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -11,10 +11,7 @@ export async function signInWithEmail(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const h = await headers();
-  const origin =
-    h.get("origin") ??
-    (h.get("host") ? `http://${h.get("host")}` : "http://localhost:3000");
+  const origin = await getRequestOrigin();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,

@@ -8,7 +8,8 @@
   --cm-ink:       #0E120F;  /* near-black */
   --cm-forest:    #1E3A2B;  /* primary */
   --cm-blueprint: #4A6B7A;  /* line work, secondary type */
-  --cm-topo:      #FF6B1A;  /* accent, wayfinding */
+  --cm-topo:      #FF6B1A;  /* accent, wayfinding (decorative use only) */
+  --cm-topo-deep: #B23F08;  /* text-grade burnt orange — passes 4.5:1 on cream */
   --cm-chalk:     #FFFDF7;  /* card surface */
   --cm-rough:     #C9C2B2;  /* dividers, disabled */
   --cm-moss:      #3B4A2A;
@@ -27,6 +28,7 @@
   --color-forest: var(--cm-forest);
   --color-blueprint: var(--cm-blueprint);
   --color-topo: var(--cm-topo);
+  --color-topo-deep: var(--cm-topo-deep);
   --color-chalk: var(--cm-chalk);
   --color-rough: var(--cm-rough);
   --color-moss: var(--cm-moss);
@@ -126,4 +128,39 @@
 .cm-tabular {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum", "zero";
+}
+
+/* ============================================================
+   Skeletons — contour-line shimmer for loading states
+   Per the plan: "loading skeletons using contour-line shimmer".
+   ============================================================ */
+@keyframes cm-shimmer {
+  from { background-position: 0% 0; }
+  to   { background-position: -200% 0; }
+}
+.cm-skel {
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--cm-blueprint) 8%, transparent) 0,
+      color-mix(in oklab, var(--cm-blueprint) 8%, transparent) 1px,
+      color-mix(in oklab, var(--cm-rough) 22%, transparent) 1px,
+      color-mix(in oklab, var(--cm-rough) 22%, transparent) 14px
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, var(--cm-chalk) 60%, transparent) 50%,
+      transparent 100%
+    );
+  background-size: 100% 100%, 200% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0, 100% 0;
+  animation: cm-shimmer 2.4s linear infinite;
+  border-radius: 6px;
+}
+.cm-skel-circle {
+  border-radius: 9999px;
 }
