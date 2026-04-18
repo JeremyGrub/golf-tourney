@@ -39,11 +39,6 @@ export function useLeaderboardRealtime(
   onScore: (row: LeaderboardScore) => void
 ) {
   useEffect(() => {
-    // Using console.log (not .debug) so the output is visible in production
-    // DevTools without anyone having to flip the "Verbose" log level.
-    // These are temporary — rip out once we've confirmed Realtime is healthy.
-    // eslint-disable-next-line no-console
-    console.log("[leaderboard] hook mounted, ids =", participantIds.size);
     if (participantIds.size === 0) return;
     const supabase = createClient();
     const ids = Array.from(participantIds);
@@ -51,8 +46,6 @@ export function useLeaderboardRealtime(
 
     const handle = (payload: { new: unknown }) => {
       const row = payload.new as ScoreRow;
-      // eslint-disable-next-line no-console
-      console.log("[leaderboard] raw event received", row);
       if (!row || !participantIds.has(row.participant_id)) return;
       onScore({
         participant_id: row.participant_id,
@@ -74,8 +67,16 @@ export function useLeaderboardRealtime(
         handle
       )
       .subscribe((status, err) => {
-        // eslint-disable-next-line no-console
-        console.log("[leaderboard] sub status =", status, err ?? "");
+        // Only surface the broken states — a healthy stream should be
+        // invisible in the console.
+        if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          // eslint-disable-next-line no-console
+          console.warn("[leaderboard] realtime status", status, err ?? "");
+        }
       });
 
     return () => {
