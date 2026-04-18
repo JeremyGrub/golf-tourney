@@ -21,6 +21,17 @@ const ERROR_MESSAGES: Record<string, { tone: "warn" | "info"; text: string }> = 
     tone: "warn",
     text: "Couldn't get that link out the door. Try again in a moment.",
   },
+  // The callback fired but the PKCE verifier cookie was gone. Usually means
+  // the magic link got opened in a different browser than the form was
+  // submitted from — phone mail app → default browser is the classic trap.
+  exchange_failed: {
+    tone: "info",
+    text: "That link opened in a different browser than the one you used to sign in. Request a new link below and open it from this same browser.",
+  },
+  missing_code: {
+    tone: "warn",
+    text: "That link didn't carry a sign-in code. Request a fresh one below.",
+  },
 };
 
 function ErrorNote({ code }: { code: string }) {
