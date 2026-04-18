@@ -329,8 +329,13 @@ function GridRow({
       <div className="grid grid-cols-[repeat(10,minmax(0,1fr))] items-center px-3 py-2">
         {rows.map((r) => {
           const cls = classifyStroke(r.strokes, r.par);
+          // Cell colour scale, best → worst. Albatross gets the deepest
+          // topo so it pops even next to an eagle; triple/big step down
+          // through ink tints so a rough hole reads muted, not shouty.
           const bg =
-            cls === "eagle"
+            cls === "albatross"
+              ? "bg-topo-deep text-chalk"
+              : cls === "eagle"
               ? "bg-topo text-chalk"
               : cls === "birdie"
               ? "bg-forest/90 text-chalk"
@@ -339,7 +344,11 @@ function GridRow({
               : cls === "bogey"
               ? "bg-blueprint/15 text-blueprint"
               : cls === "double"
+              ? "bg-blueprint/25 text-blueprint"
+              : cls === "triple"
               ? "bg-ink/10 text-ink/70"
+              : cls === "big"
+              ? "bg-ink/15 text-ink/60"
               : "bg-transparent text-ink/25";
           return (
             <span

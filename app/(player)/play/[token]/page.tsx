@@ -232,8 +232,12 @@ function ScoreCell({
   editable: boolean;
 }) {
   const cls = classifyStroke(hole.strokes, hole.par);
+  // Matches the leaderboard expanded-grid palette so a player's own card
+  // and the public grid always agree on "what colour is a bogey".
   const bg =
-    cls === "eagle"
+    cls === "albatross"
+      ? "bg-topo-deep text-chalk"
+      : cls === "eagle"
       ? "bg-topo text-chalk"
       : cls === "birdie"
       ? "bg-forest/90 text-chalk"
@@ -242,7 +246,11 @@ function ScoreCell({
       : cls === "bogey"
       ? "bg-blueprint/15 text-blueprint"
       : cls === "double"
+      ? "bg-blueprint/25 text-blueprint"
+      : cls === "triple"
       ? "bg-ink/10 text-ink/70"
+      : cls === "big"
+      ? "bg-ink/15 text-ink/60"
       : "bg-transparent text-ink/25";
 
   const content = hole.strokes != null ? String(hole.strokes) : "—";

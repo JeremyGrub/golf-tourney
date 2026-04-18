@@ -86,8 +86,13 @@ export default function HoleEntry({
   const diffLabel =
     diff === 0 ? "even par" : diff > 0 ? `+${diff} vs par` : `${diff} vs par`;
 
+  // Name the rare ones; let the numeric label carry the weight once we
+  // hit +4 or worse (quad/snowman territory — "quintuple bogey" on a pill
+  // looks absurd, "+5" is honest).
   const badge =
-    cls === "eagle"
+    cls === "albatross"
+      ? "albatross"
+      : cls === "eagle"
       ? "eagle"
       : cls === "birdie"
       ? "birdie"
@@ -95,15 +100,23 @@ export default function HoleEntry({
       ? "par"
       : cls === "bogey"
       ? "bogey"
-      : "double+";
+      : cls === "double"
+      ? "double"
+      : cls === "triple"
+      ? "triple"
+      : `+${diff}`;
 
+  // The surrounding card ring mirrors the pill — celebrate sub-par, stay
+  // cool on par, lean blueprint on over-par, fade into ink as we pile on.
   const ringTone =
-    cls === "eagle"
+    cls === "albatross" || cls === "eagle"
       ? "ring-topo/40 bg-topo/5"
       : cls === "birdie"
       ? "ring-forest/30 bg-forest/5"
       : cls === "bogey" || cls === "double"
       ? "ring-blueprint/30 bg-blueprint/5"
+      : cls === "triple" || cls === "big"
+      ? "ring-ink/20 bg-ink/5"
       : "ring-ink/15 bg-chalk";
 
   return (
@@ -153,13 +166,17 @@ export default function HoleEntry({
               </span>
               <span
                 className={`mt-2 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] ${
-                  cls === "eagle"
+                  cls === "albatross"
+                    ? "bg-topo-deep text-chalk"
+                    : cls === "eagle"
                     ? "bg-topo text-chalk"
                     : cls === "birdie"
                     ? "bg-forest text-chalk"
                     : cls === "par"
                     ? "bg-ink/10 text-ink"
-                    : "bg-blueprint/15 text-blueprint"
+                    : cls === "bogey" || cls === "double"
+                    ? "bg-blueprint/15 text-blueprint"
+                    : "bg-ink/15 text-ink/70"
                 }`}
               >
                 {badge}
