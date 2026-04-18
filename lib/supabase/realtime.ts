@@ -39,6 +39,11 @@ export function useLeaderboardRealtime(
   onScore: (row: LeaderboardScore) => void
 ) {
   useEffect(() => {
+    // Using console.log (not .debug) so the output is visible in production
+    // DevTools without anyone having to flip the "Verbose" log level.
+    // These are temporary — rip out once we've confirmed Realtime is healthy.
+    // eslint-disable-next-line no-console
+    console.log("[leaderboard] hook mounted, ids =", participantIds.size);
     if (participantIds.size === 0) return;
     const supabase = createClient();
     const ids = Array.from(participantIds);
@@ -46,11 +51,9 @@ export function useLeaderboardRealtime(
 
     const handle = (payload: { new: unknown }) => {
       const row = payload.new as ScoreRow;
+      // eslint-disable-next-line no-console
+      console.log("[leaderboard] raw event received", row);
       if (!row || !participantIds.has(row.participant_id)) return;
-      if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
-        console.debug("[leaderboard] score event", row);
-      }
       onScore({
         participant_id: row.participant_id,
         hole_id: row.hole_id,
@@ -71,19 +74,8 @@ export function useLeaderboardRealtime(
         handle
       )
       .subscribe((status, err) => {
-        if (status === "SUBSCRIBED") {
-          if (process.env.NODE_ENV !== "production") {
-            // eslint-disable-next-line no-console
-            console.debug("[leaderboard] realtime subscribed", channelKey);
-          }
-          return;
-        }
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-          // Surface in prod too — this is the thing that bites you when
-          // the publication is misconfigured or the WS gets blocked.
-          // eslint-disable-next-line no-console
-          console.warn("[leaderboard] realtime status", status, err ?? "");
-        }
+        // eslint-disable-next-line no-console
+        console.log("[leaderboard] sub status =", status, err ?? "");
       });
 
     return () => {
