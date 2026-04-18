@@ -1,6 +1,38 @@
 import Link from "next/link";
 import { signInWithEmail } from "./actions";
 
+/**
+ * Error messages shown under the email field. Kept in one place so we're not
+ * sprinkling conditionals through the form. Tone: honest + brief. If a user
+ * can do something about it (fix the email), say that. If they can't (rate
+ * limit, backend blip), tell them to try again and make it feel like it's
+ * *our* problem, not theirs.
+ */
+const ERROR_MESSAGES: Record<string, { tone: "warn" | "info"; text: string }> = {
+  bad_email: {
+    tone: "warn",
+    text: "That doesn't look like a valid email. Try again?",
+  },
+  rate_limited: {
+    tone: "info",
+    text: "Hold up — the email server is catching up. Give it a minute and try again.",
+  },
+  send_failed: {
+    tone: "warn",
+    text: "Couldn't get that link out the door. Try again in a moment.",
+  },
+};
+
+function ErrorNote({ code }: { code: string }) {
+  const msg = ERROR_MESSAGES[code] ?? ERROR_MESSAGES.send_failed;
+  const color = msg.tone === "warn" ? "text-topo-deep" : "text-blueprint";
+  return (
+    <p className={`font-mono text-[11px] uppercase tracking-[0.18em] ${color}`}>
+      · {msg.text}
+    </p>
+  );
+}
+
 type SearchParams = Promise<{ sent?: string; to?: string; err?: string }>;
 
 export default async function LoginPage({
@@ -69,16 +101,7 @@ export default async function LoginPage({
               />
             </div>
 
-            {err === "bad_email" && (
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-topo">
-                · please enter a valid email
-              </p>
-            )}
-            {err === "send_failed" && (
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-topo">
-                · couldn&apos;t send the link — try again?
-              </p>
-            )}
+            {err && <ErrorNote code={err} />}
 
             <button
               type="submit"
