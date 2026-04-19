@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useOptimistic, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { submitScore } from "@/app/(player)/play/[token]/actions";
 import { classifyStroke } from "@/lib/scoring/compute";
 import { enqueueScore } from "@/lib/offline/queue";
@@ -17,6 +17,22 @@ type Props = {
   scorecardHref: string;
 };
 
+/**
+ * Save status machine for the hole entry screen.
+ *
+ *   saved    — server holds the current value
+ *   editing  — user has tapped +/-; value is local-only, pending flush
+ *   saving   — flush in flight
+ *   queued   — flush happened while offline; queued for replay
+ *   error    — flush hit a non-transient failure (tournament not live, etc.)
+ *
+ * Score submits are deferred: we only call the RPC when the player
+ * navigates away from the hole (prev / next / finish / card). This keeps
+ * the public leaderboard from flickering while someone taps down to
+ * albatross for the bit and back up to their real score.
+ */
+type SaveStatus = "saved" | "editing" | "saving" | "queued" | "error";
+
 export default function HoleEntry({
   token,
   holeNumber,
@@ -28,22 +44,25 @@ export default function HoleEntry({
   scorecardHref,
 }: Props) {
   const [strokes, setStrokes] = useState<number>(initialStrokes ?? par);
-  const [optimisticStrokes, applyOptimistic] = useOptimistic(
-    strokes,
-    (_state, next: number) => next
+  const [status, setStatus] = useState<SaveStatus>(
+    // If there's already a saved stroke count, start in "saved"; if the
+    // player hasn't touched this hole yet, we pre-fill with par and call
+    // that a draft until they explicitly commit (by tapping +/- or
+    // navigating — either way, their intent gets recorded).
+    initialStrokes != null ? "saved" : "editing"
   );
-  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [queued, setQueued] = useState<boolean>(false);
 
-  function commit(next: number) {
-    if (next < 1) next = 1;
-    if (next > 15) next = 15;
-    setStrokes(next);
-    setError(null);
-    setQueued(false);
-    startTransition(async () => {
-      applyOptimistic(next);
+  // The most recent value the user touched that hasn't been shipped yet.
+  // Cleared when a flush starts; reset if they tap again during save.
+  const pendingRef = useRef<number | null>(
+    initialStrokes == null ? par : null
+  );
+
+  const submit = useCallback(
+    async (value: number) => {
+      setStatus("saving");
+      setError(null);
 
       // Offline at submit time — skip the server action entirely and queue
       // for the OfflineShell to drain later.
@@ -51,38 +70,69 @@ export default function HoleEntry({
         await enqueueScore({
           token,
           holeNumber,
-          strokes: next,
+          strokes: value,
           queuedAt: Date.now(),
         });
-        setQueued(true);
+        setStatus("queued");
         return;
       }
 
       try {
-        const result = await submitScore(token, holeNumber, next);
+        const result = await submitScore(token, holeNumber, value);
         if (!result.ok) {
           setError(
             result.error.includes("tournament_not_live")
               ? "This tournament hasn't tipped off yet."
               : "Couldn't sync. Try again."
           );
+          setStatus("error");
+          return;
         }
+        setStatus("saved");
       } catch {
         // Transport failure (network dropped mid-flight, Server Action
         // couldn't reach the server). Queue and show the offline affordance.
         await enqueueScore({
           token,
           holeNumber,
-          strokes: next,
+          strokes: value,
           queuedAt: Date.now(),
         });
-        setQueued(true);
+        setStatus("queued");
       }
-    });
+    },
+    [token, holeNumber]
+  );
+
+  // On every +/- tap: update the display and remember the value. No
+  // network call here — the leaderboard stays quiet until the player
+  // moves on.
+  function commit(next: number) {
+    if (next < 1) next = 1;
+    if (next > 15) next = 15;
+    setStrokes(next);
+    pendingRef.current = next;
+    setStatus("editing");
+    setError(null);
   }
 
-  const cls = classifyStroke(optimisticStrokes, par);
-  const diff = optimisticStrokes - par;
+  // Flush on unmount. Catches every way the player can leave this hole:
+  // prev/next/finish Links, the "← card" link, browser back, a fresh
+  // navigation from the offline shell, all of them. The fetch survives
+  // the unmount — the browser keeps the request in flight even as the
+  // component tears down.
+  useEffect(() => {
+    return () => {
+      const v = pendingRef.current;
+      if (v != null) {
+        pendingRef.current = null;
+        void submit(v);
+      }
+    };
+  }, [submit]);
+
+  const cls = classifyStroke(strokes, par);
+  const diff = strokes - par;
   const diffLabel =
     diff === 0 ? "even par" : diff > 0 ? `+${diff} vs par` : `${diff} vs par`;
 
@@ -156,13 +206,13 @@ export default function HoleEntry({
           <div className="mt-8 flex items-center justify-between">
             <StrokeButton
               aria-label="decrement stroke"
-              onClick={() => commit(optimisticStrokes - 1)}
-              disabled={optimisticStrokes <= 1}
+              onClick={() => commit(strokes - 1)}
+              disabled={strokes <= 1}
               symbol="−"
             />
             <div className="flex flex-col items-center">
               <span className="font-display text-8xl font-semibold leading-none tabular-nums cm-tabular">
-                {optimisticStrokes}
+                {strokes}
               </span>
               <span
                 className={`mt-2 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] ${
@@ -184,8 +234,8 @@ export default function HoleEntry({
             </div>
             <StrokeButton
               aria-label="increment stroke"
-              onClick={() => commit(optimisticStrokes + 1)}
-              disabled={optimisticStrokes >= 15}
+              onClick={() => commit(strokes + 1)}
+              disabled={strokes >= 15}
               symbol="+"
             />
           </div>
@@ -193,18 +243,20 @@ export default function HoleEntry({
           <div className="mt-8 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em]">
             <span
               className={
-                queued
+                status === "queued" || status === "error"
                   ? "text-topo-deep"
-                  : error
-                  ? "text-topo-deep"
+                  : status === "editing"
+                  ? "text-blueprint"
                   : "text-ink/40"
               }
             >
-              {isPending
+              {status === "editing"
+                ? "draft · saves when you move on"
+                : status === "saving"
                 ? "saving…"
-                : queued
+                : status === "queued"
                 ? "queued · syncs when back online"
-                : error
+                : status === "error"
                 ? "try again"
                 : "saved"}
             </span>
