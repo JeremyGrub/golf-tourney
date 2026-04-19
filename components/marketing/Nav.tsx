@@ -27,7 +27,7 @@ export default function Nav() {
             Sign in
           </Link>
           <Link
-            href="#start"
+            href="/dashboard"
             className="group relative inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 font-mono text-xs uppercase tracking-[0.18em] text-chalk transition-colors hover:bg-forest"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-topo cm-blink" />

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import HeroCourseFallback from "@/components/three/HeroCourseFallback";
 
 const HeroCourse = dynamic(() => import("@/components/three/HeroCourse"), {
@@ -34,13 +35,13 @@ export default function Hero() {
           </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href="#start"
+            <Link
+              href="/dashboard"
               className="group relative inline-flex items-center justify-between gap-6 rounded-full bg-topo px-6 py-4 font-mono text-xs uppercase tracking-[0.2em] text-chalk transition-transform hover:-translate-y-0.5"
             >
               Start a tournament
               <span aria-hidden className="text-base leading-none">→</span>
-            </a>
+            </Link>
             <a
               href="#demo"
               className="inline-flex items-center gap-2 px-6 py-4 font-mono text-xs uppercase tracking-[0.2em] text-ink/80 hover:text-ink"
