@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { assertLoaded } from "@/lib/supabase/assert";
 import type { Hole, Score } from "@/lib/scoring/compute";
 
 export type LeaderboardParticipant = {
@@ -27,10 +28,14 @@ export type LeaderboardSnapshot = {
   scores: LeaderboardScore[];
 };
 
+// Every query here is asserted: a failed tournament lookup would otherwise
+// render the not-found page ("the URL might be off by a character") to every
+// spectator mid-round, and a failed `holes` fetch would quietly publish a
+// board with par 0 and every to-par figure wrong.
 export async function loadLeaderboard(slug: string): Promise<LeaderboardSnapshot> {
   const supabase = await createClient();
 
-  const { data: tournament } = await supabase
+  const { data: tournament, error: tournamentError } = await supabase
     .from("tournaments")
     .select(
       "id, name, slug, course_name, course_location, hole_count, status, start_date, start_time"
@@ -39,9 +44,12 @@ export async function loadLeaderboard(slug: string): Promise<LeaderboardSnapshot
     .in("status", ["live", "complete"])
     .maybeSingle();
 
+  // Order matters — a failed query has to throw before a null `tournament`
+  // can be mistaken for "no such tournament".
+  assertLoaded(tournamentError, "the tournament");
   if (!tournament) notFound();
 
-  const [{ data: holes }, { data: participants }] = await Promise.all([
+  const [holesResult, participantsResult] = await Promise.all([
     supabase
       .from("holes")
       .select("id, hole_number, par")
@@ -54,19 +62,26 @@ export async function loadLeaderboard(slug: string): Promise<LeaderboardSnapshot
       .order("created_at", { ascending: true }),
   ]);
 
-  const participantIds = (participants ?? []).map((p) => p.id);
-  const { data: scores } =
+  assertLoaded(holesResult.error, "the scorecard");
+  assertLoaded(participantsResult.error, "the field");
+
+  const participants = participantsResult.data ?? [];
+  const participantIds = participants.map((p) => p.id);
+
+  const scoresResult =
     participantIds.length > 0
       ? await supabase
           .from("scores")
           .select("hole_id, strokes, participant_id")
           .in("participant_id", participantIds)
-      : { data: [] };
+      : { data: [], error: null };
+
+  assertLoaded(scoresResult.error, "the scores");
 
   return {
     tournament: tournament as LeaderboardSnapshot["tournament"],
-    holes: (holes ?? []) as Hole[],
-    participants: (participants ?? []) as LeaderboardParticipant[],
-    scores: (scores ?? []) as LeaderboardScore[],
+    holes: (holesResult.data ?? []) as Hole[],
+    participants: participants as LeaderboardParticipant[],
+    scores: (scoresResult.data ?? []) as LeaderboardScore[],
   };
 }

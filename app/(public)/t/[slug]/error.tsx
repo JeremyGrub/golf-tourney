@@ -3,12 +3,16 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
+// `reset()` only clears the boundary and re-renders — it does NOT re-fetch, so
+// it can't recover a Server Component failure like a dropped Supabase query.
+// `unstable_retry()` (Next 16.2+) re-fetches and re-renders, which is what a
+// spectator hammering "refresh" during a round actually needs.
 export default function LeaderboardError({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -36,7 +40,7 @@ export default function LeaderboardError({
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => unstable_retry()}
             className="inline-flex items-center gap-3 rounded-full bg-topo px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-chalk transition-transform hover:-translate-y-0.5"
           >
             Refresh leaderboard <span aria-hidden>↻</span>

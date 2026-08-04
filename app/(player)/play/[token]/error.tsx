@@ -2,12 +2,15 @@
 
 import { useEffect } from "react";
 
+// `reset()` only clears the boundary and re-renders — it does NOT re-fetch, so
+// it can't recover a Server Component failure. `unstable_retry()` (Next 16.2+)
+// re-fetches, which is what a player on a patchy course signal actually needs.
 export default function ScorecardError({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -36,7 +39,7 @@ export default function ScorecardError({
       </div>
       <button
         type="button"
-        onClick={() => reset()}
+        onClick={() => unstable_retry()}
         className="inline-flex items-center gap-3 rounded-full bg-topo px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-chalk transition-transform hover:-translate-y-0.5"
       >
         Reload card <span aria-hidden>↻</span>

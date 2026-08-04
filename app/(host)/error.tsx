@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useEffect } from "react";
 import HostChrome from "@/components/host/HostChrome";
 
+// `reset()` re-renders without re-fetching, so it can't recover a failed
+// Server Component query. `unstable_retry()` (Next 16.2+) re-fetches.
 export default function HostError({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -38,7 +40,7 @@ export default function HostError({
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => reset()}
+              onClick={() => unstable_retry()}
               className="inline-flex items-center gap-3 rounded-full bg-topo px-5 py-3 font-mono text-xs uppercase tracking-[0.2em] text-chalk transition-transform hover:-translate-y-0.5"
             >
               Try again <span aria-hidden>↻</span>

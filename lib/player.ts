@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { assertLoaded } from "@/lib/supabase/assert";
 import type { Hole, Score } from "@/lib/scoring/compute";
 
 export type PlayerCard = {
@@ -31,6 +32,12 @@ export async function loadPlayerCard(token: string): Promise<PlayerCard> {
   const { data, error } = await supabase.rpc("get_player_card", {
     p_token: token,
   });
-  if (error || !data) notFound();
+
+  // get_player_card() returns null for an unknown token rather than raising,
+  // so a set `error` always means the backend failed — never "bad link".
+  // Folding the two together told a player mid-round that their perfectly
+  // good card link was dead.
+  assertLoaded(error, "your scorecard");
+  if (!data) notFound();
   return data as unknown as PlayerCard;
 }

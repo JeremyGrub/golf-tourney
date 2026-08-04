@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { loadOwnedTournament } from "@/lib/host";
+import { assertLoaded } from "@/lib/supabase/assert";
 import CopyField from "@/components/host/CopyField";
 import EmptyState from "@/components/ui/EmptyState";
 import { addParticipant, deleteParticipant } from "../actions";
@@ -13,12 +14,15 @@ export default async function PlayersPage({
   const { id } = await params;
   const { supabase } = await loadOwnedTournament(id);
 
-  const { data: players } = await supabase
+  const { data: players, error } = await supabase
     .from("participants")
     .select("id, display_name, hometown, access_token, created_at")
     .eq("tournament_id", id)
     .order("created_at", { ascending: true });
 
+  // Without this a failed query renders an empty field, which reads as "your
+  // players are gone" — the worst possible thing to show a host on event day.
+  assertLoaded(error, "the field");
   const list = players ?? [];
 
   const h = await headers();

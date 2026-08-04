@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { assertLoaded } from "@/lib/supabase/assert";
 import HostChrome from "@/components/host/HostChrome";
 import EmptyState from "@/components/ui/EmptyState";
 
@@ -14,12 +15,15 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const { data: tournaments } = await supabase
+  const { data: tournaments, error } = await supabase
     .from("tournaments")
     .select("id, name, slug, course_name, start_date, hole_count, status, created_at")
     .eq("host_id", user.id)
     .order("created_at", { ascending: false });
 
+  // A swallowed error here shows the "no tournaments yet" empty state to a
+  // host who definitely has tournaments. Let it surface instead.
+  assertLoaded(error, "your tournaments");
   const list = tournaments ?? [];
 
   return (

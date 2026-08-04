@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { loadOwnedTournament } from "@/lib/host";
+import { assertLoaded } from "@/lib/supabase/assert";
 import HoleParEditor from "@/components/host/HoleParEditor";
 
 export default async function HolesPage({
@@ -10,12 +11,15 @@ export default async function HolesPage({
   const { id } = await params;
   const { supabase, tournament } = await loadOwnedTournament(id);
 
-  const { data: holes } = await supabase
+  const { data: holes, error } = await supabase
     .from("holes")
     .select("id, hole_number, par")
     .eq("tournament_id", id)
     .order("hole_number", { ascending: true });
 
+  // An empty list here would render a scorecard with no holes, and any par
+  // the host then set would be written against a stale view of the round.
+  assertLoaded(error, "the scorecard");
   const list = holes ?? [];
 
   return (
