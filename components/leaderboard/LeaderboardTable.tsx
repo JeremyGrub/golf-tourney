@@ -100,7 +100,7 @@ export default function LeaderboardTable({
       {/*
         Column widths are fixed (not `auto`) so the header grid and each row
         grid line up exactly. `auto` sized each grid independently to its
-        own content, which drifted the THRU / TOTAL / TO PAR edges apart
+        own content, which drifted the THRU / TOTAL / PAR edges apart
         because the header words are wider than their numeric values.
       */}
       <div className="grid grid-cols-[2rem_minmax(0,1fr)_2.75rem_3.25rem_4.5rem] items-center gap-3 border-b border-ink/10 bg-bg/60 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.22em] text-blueprint md:px-6">
@@ -108,7 +108,7 @@ export default function LeaderboardTable({
         <span>player</span>
         <span className="text-right">thru</span>
         <span className="text-right">total</span>
-        <span className="text-right">to par</span>
+        <span className="text-right">par</span>
       </div>
 
       <ul className="divide-y divide-ink/5">
@@ -274,7 +274,7 @@ function FlashCell({
 }) {
   // The orange flash pill is an absolutely-positioned overlay rather than
   // a padded wrapper — that way the number inside sits flush with the
-  // grid-cell's right edge (matching the TO PAR header), while the pill
+  // grid-cell's right edge (matching the PAR header), while the pill
   // still extends a couple of pixels past the digits for breathing room.
   return (
     <span className="relative inline-flex justify-self-end">
